@@ -26,7 +26,7 @@ class Limb {
         this.height = 50;
         this.posX = 0;
         this.posY = 0;
-        this.direction = 'right';
+        this.direction = null;
         this.element = null;
         this.display = document.querySelector('#gameDisplay');
     }
@@ -36,6 +36,7 @@ class Limb {
         this.element = document.createElement('div');
         this.element.style.width = `${this.width}px`;
         this.element.style.height = `${this.height}px`;
+        this.element.style.borderRadius = '25%';
         this.element.style.position = 'relative';
         this.element.style.left = `${this.posX}px`;
         this.element.style.top = `${this.posY}px`;
@@ -45,28 +46,67 @@ class Limb {
     moveLimb() {
         if (this.direction === 'left') {
             this.posX -= 50;
+            if (this.posX < 0) {
+                this.posX = 0;
+                isRunning = false;
+            }
             this.element.style.left = `${this.posX}px`;
         } else if (this.direction === 'up') {
             this.posY -= 50;
+            if (this.posY < 0) {
+                this.posY = 0;
+                isRunning = false;
+            }
             this.element.style.top = `${this.posY}px`;
         } else if (this.direction === 'right') {
             this.posX += 50;
+            if (this.posX > 450) {
+                this.posX = 450;
+                isRunning = false;
+            }
             this.element.style.left = `${this.posX}px`;
         } else if (this.direction === 'down') {
             this.posY += 50;
+            if (this.posY > 450) {
+                this.posY = 450;
+                isRunning = false;
+            }
             this.element.style.top = `${this.posY}px`;
         }
     }
 }
 
-// Initialize the head of the snake
-let head = new Limb();
-head.drawLimb(0, 0);
+/* SNAKE CLASS */
+class Snake {
+    constructor() {
+        this.head = new Limb();
+        this.tail = this.head;
+        this.limbs = [this.head];
+        this.turnPoints = [];
+        this.length = 1;
+    }
+    turn(direction) {
+        const turnPoint = {
+            direction: direction,
+            posX: this.head.posX,
+            poxY: this.head.posY
+        }
+        this.turnPoints.push(turnPoint);
+    }
+}
+
+// Create a snake
+let snake = new Snake();
+snake.head.drawLimb(0, 0);
 
 let isRunning = false;
 window.setInterval(() => {
     if (isRunning) {
-        window.setInterval(moveHead(), 100);
+        window.setInterval(() => {
+            for (let limb of snake.limbs) {
+
+            }
+        }, 100);
     }
 }, 100)
 
@@ -74,18 +114,12 @@ window.setInterval(() => {
 window.addEventListener('keydown', (e) => {
     isRunning = true;
     if (e.key === 'a') {
-        head.direction = 'left';
+        snake.turn('left');
     } else if (e.key === 'w') {
-        head.direction = 'up';
+        snake.turn('up');
     } else if (e.key === 'd') {
-        head.direction = 'right';
+        snake.turn('right');
     } else if (e.key === 's') {
-        head.direction = 'down';
+        snake.turn('down');
     }
 })
-
-function moveHead() {
-    head.moveLimb();
-}
-
-
