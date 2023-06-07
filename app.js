@@ -1,125 +1,89 @@
-/* SELECTIONS */
-const mainContainer = document.querySelector('#main');
+/* Canvas */
+const canvas = document.querySelector('#canvas');
+const ctx = canvas.getContext('2d');
 
-/* GAME DISPLAY */
-const displayWidth = 500;
-const displayHeight = 500;
-const displayColor = '#6c584c';
+document.body.addEventListener('keydown', keydown);
 
-function drawDisplay(width, height) {
-    const gameDisplay = document.createElement('div');
-    gameDisplay.style.width = `${displayWidth}px`;
-    gameDisplay.style.height = `${displayHeight}px`;
-    gameDisplay.style.backgroundColor = '#6c584c'
-    gameDisplay.style.margin = 'auto';
-    gameDisplay.style.position = 'relative';
-    gameDisplay.id = 'gameDisplay';
-    main.append(gameDisplay);
+function keydown(e) {
+    if (e.key === 'ArrowUp') {
+        if (game.snake.directionY === 1) return;
+        game.snake.directionX = 0;
+        game.snake.directionY = -1;
+    } else if (e.key === 'ArrowDown') {
+        if (game.snake.directionY === -1) return;
+        game.snake.directionX = 0;
+        game.snake.directionY = 1;
+    } else if (e.key === 'ArrowLeft') {
+        if (game.snake.directionX === 1) return;
+        game.snake.directionX = -1;
+        game.snake.directionY = 0;
+    } else if (e.key === 'ArrowRight') {
+        if (game.snake.directionX === -1) return;
+        game.snake.directionX = 1;
+        game.snake.directionY = 0;
+    }
 }
 
-drawDisplay(displayWidth, displayHeight);
-
-/* SNAKE LIMBS CLASS */
-class Limb {
+/* Display class */
+class Game {
     constructor() {
-        this.width = 50;
-        this.height = 50;
-        this.posX = 0;
-        this.posY = 0;
-        this.direction = null;
-        this.element = null;
-        this.display = document.querySelector('#gameDisplay');
+        this.fps = 10;
+        this.gridCount = 20;
+        this.gridSize = 22;
+        this.snake = new Snake;
+        this.apple = new Apple;
     }
-    drawLimb(x, y) {
-        this.posX = x;
-        this.posY = y;
-        this.element = document.createElement('div');
-        this.element.style.width = `${this.width}px`;
-        this.element.style.height = `${this.height}px`;
-        this.element.style.borderRadius = '25%';
-        this.element.style.position = 'relative';
-        this.element.style.left = `${this.posX}px`;
-        this.element.style.top = `${this.posY}px`;
-        this.element.style.backgroundColor = 'green';
-        this.display.append(this.element);
+    clearDisplay() {
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
     }
-    moveLimb() {
-        if (this.direction === 'left') {
-            this.posX -= 50;
-            if (this.posX < 0) {
-                this.posX = 0;
-                isRunning = false;
-            }
-            this.element.style.left = `${this.posX}px`;
-        } else if (this.direction === 'up') {
-            this.posY -= 50;
-            if (this.posY < 0) {
-                this.posY = 0;
-                isRunning = false;
-            }
-            this.element.style.top = `${this.posY}px`;
-        } else if (this.direction === 'right') {
-            this.posX += 50;
-            if (this.posX > 450) {
-                this.posX = 450;
-                isRunning = false;
-            }
-            this.element.style.left = `${this.posX}px`;
-        } else if (this.direction === 'down') {
-            this.posY += 50;
-            if (this.posY > 450) {
-                this.posY = 450;
-                isRunning = false;
-            }
-            this.element.style.top = `${this.posY}px`;
-        }
+    drawSnake() {
+        ctx.fillStyle = 'green';
+        ctx.fillRect(this.snake.headX * this.gridCount, this.snake.headY * this.gridCount, this.gridSize, this.gridSize);
+    }
+    drawApple() {
+        ctx.fillStyle = 'red';
+        ctx.fillRect(this.apple.x * this.gridCount, this.apple.y * this.gridCount, this.gridSize, this.gridSize);
     }
 }
 
-/* SNAKE CLASS */
+/* Snake class */
 class Snake {
     constructor() {
-        this.head = new Limb();
-        this.tail = this.head;
-        this.limbs = [this.head];
-        this.turnPoints = [];
-        this.length = 1;
+        this.headX = 10;
+        this.headY = 10;
+        this.directionX = 0;
+        this.directionY = 0;
     }
-    turn(direction) {
-        const turnPoint = {
-            direction: direction,
-            posX: this.head.posX,
-            poxY: this.head.posY
-        }
-        this.turnPoints.push(turnPoint);
+    move() {
+        this.headX += this.directionX;
+        this.headY += this.directionY;
     }
 }
 
-// Create a snake
-let snake = new Snake();
-snake.head.drawLimb(0, 0);
-
-let isRunning = false;
-window.setInterval(() => {
-    if (isRunning) {
-        window.setInterval(() => {
-            for (let limb of snake.limbs) {
-
-            }
-        }, 100);
+class Apple {
+    constructor() {
+        this.x = 10;
+        this.y = 10;
     }
-}, 100)
-
-
-window.addEventListener('keydown', (e) => {
-    isRunning = true;
-    if (e.key === 'a') {
-        snake.turn('left');
-    } else if (e.key === 'w') {
-        snake.turn('up');
-    } else if (e.key === 'd') {
-        snake.turn('right');
-    } else if (e.key === 's') {
-        snake.turn('down');
+    checkCollision(headX, headY, gridCount) {
+        if (this.x === headX && this.y === headY) {
+            this.x = Math.floor(Math.random() * gridCount);
+            this.y = Math.floor(Math.random() * gridCount);
+        }
     }
-})
+}
+
+function main() {
+    game.clearDisplay();
+    game.drawSnake();
+    game.apple.checkCollision(game.snake.headX, game.snake.headY, game.gridCount);
+    game.drawApple();
+    game.snake.move();
+    setTimeout(main, 1000 / game.fps);
+}
+
+/* Create the game object */
+const game = new Game;
+/* Run the game */
+main();
